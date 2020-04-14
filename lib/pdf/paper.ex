@@ -38,5 +38,5 @@ defmodule Pdf.Paper do
     def size({unquote(size), :landscape}), do: [0, 0 | unquote(Enum.reverse(dimensions))]
   end)
 
-  def size([_width, _height] = dimensions), do: [0, 0, dimensions]
+  def size([width, height]), do: [0, 0, width, height]
 end
