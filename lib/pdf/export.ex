@@ -79,3 +79,7 @@ defimpl Pdf.Export, for: Tuple do
 
   def to_iolist({:command, command}), do: command
 end
+
+defimpl Pdf.Export, for: Atom do
+  def to_iolist(module), do: apply(module, :to_iolist, [])
+end

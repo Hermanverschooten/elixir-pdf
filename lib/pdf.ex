@@ -740,8 +740,12 @@ defmodule Pdf do
       {:reply, :ok, Document.set_font_size(document, size)}
     end
 
-    def handle_call({:add_font, path}, _from, document) do
+    def handle_call({:add_font, path}, _from, document) when is_binary(path) do
       {:reply, :ok, Document.add_external_font(document, path)}
+    end
+
+    def handle_call({:add_font, module}, _from, document) when is_atom(module) do
+      {:reply, :ok, Document.add_extra_font(document, module)}
     end
 
     def handle_call({:set_text_leading, leading}, _from, document) do

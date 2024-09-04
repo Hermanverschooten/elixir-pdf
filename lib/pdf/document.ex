@@ -187,6 +187,11 @@ defmodule Pdf.Document do
     document
   end
 
+  def add_extra_font(%{fonts: fonts} = document, module) do
+    Fonts.add_extra_font(fonts, module)
+    document
+  end
+
   def add_page(%__MODULE__{current: nil, fonts: fonts, opts: doc_opts} = document, opts) do
     new_page = Page.new(Keyword.merge(Keyword.merge(doc_opts, opts), fonts: fonts))
     %{document | current: new_page}

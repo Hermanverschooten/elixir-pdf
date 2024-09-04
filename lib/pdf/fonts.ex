@@ -23,6 +23,10 @@ defmodule Pdf.Fonts do
     GenServer.call(pid, {:add_external_font, path})
   end
 
+  def add_extra_font(pid, module) do
+    GenServer.call(pid, {:add_extra_font, module})
+  end
+
   defmodule Server do
     use GenServer
 
@@ -70,6 +74,38 @@ defmodule Pdf.Fonts do
         }
 
         fonts = Map.put(fonts, font_module.name, reference)
+        {:reply, reference, %{state | last_id: id, fonts: fonts}}
+      else
+        {:reply, :already_exists, state}
+      end
+    end
+
+    def handle_call({:add_extra_font, font_module}, _from, state) do
+      %{last_id: last_id, fonts: fonts, objects: objects} = state
+
+      unless fonts[font_module.name] do
+        id = last_id + 1
+
+        font_object = ObjectCollection.create_object(objects, nil)
+
+        descriptor_id = descriptor_object = ObjectCollection.create_object(objects, nil)
+
+        font_file = ObjectCollection.create_object(objects, font_module)
+
+        font_dict = ExternalFont.font_dictionary(font_module, id, descriptor_id)
+        font_descriptor_dict = ExternalFont.font_descriptor_dictionary(font_module, font_file)
+
+        ObjectCollection.update_object(objects, descriptor_object, font_descriptor_dict)
+        ObjectCollection.update_object(objects, font_object, font_dict)
+
+        reference = %FontReference{
+          name: n("F#{id}"),
+          module: font_module,
+          object: font_object
+        }
+
+        fonts = Map.put(fonts, font_module.name, reference)
+
         {:reply, reference, %{state | last_id: id, fonts: fonts}}
       else
         {:reply, :already_exists, state}
